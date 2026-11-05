@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mecanico 3D — Civic EK 1998 e Gol G2 Special 2001</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ------------------------------------------------------ topo --- -->
+    <header id="topo">
+      <div class="marca">
+        <span class="marca-sigla" id="marca-sigla">EK</span>
+        <div class="marca-texto">
+          <select id="seletor-veiculo" class="seletor-veiculo" title="Trocar de carro"></select>
+          <small id="marca-resumo"></small>
+        </div>
+      </div>
+
+      <nav class="abas-modo">
+        <button class="aba-modo ativo" data-modo="explorar">Explorar pecas</button>
+        <button class="aba-modo" data-modo="sintomas">Ouvi um barulho</button>
+        <button class="aba-modo" data-modo="vistoria">Modo Vistoria</button>
+        <button class="aba-modo" data-modo="ficha">Ficha tecnica</button>
+      </nav>
+
+      <div class="topo-acoes">
+        <span id="contador-pecas" class="pilula"></span>
+        <button id="btn-palco" class="botao-icone" title="Modo palco: recolhe todos os paineis (tecla P)">&#9974;</button>
+        <button id="btn-ajuda" class="botao-icone" title="Como usar">?</button>
+      </div>
+    </header>
+
+    <!-- -------------------------------------------- painel esquerdo --- -->
+    <aside id="lateral">
+      <div class="busca-caixa">
+        <input id="busca" type="search" placeholder="Buscar peca (ex: correia, pivo, embreagem)" autocomplete="off" />
+      </div>
+      <div id="resultado-busca" class="resultado-busca oculto"></div>
+      <div id="arvore" class="arvore"></div>
+    </aside>
+
+    <!-- ---------------------------------------------------- palco --- -->
+    <main id="palco">
+      <div id="canvas3d"></div>
+      <div id="rotulos"></div>
+
+      <div id="dica-palco" class="dica-palco">
+        Arraste para girar &middot; roda do mouse para aproximar &middot; clique numa peca para ver o guia &middot; duplo clique para enquadrar
+      </div>
+
+      <div id="hud-hover" class="hud-hover oculto"></div>
+
+      <div class="controles-vista">
+        <button data-vista="frente">Frente</button>
+        <button data-vista="lateral">Lateral</button>
+        <button data-vista="tras">Traseira</button>
+        <button data-vista="cima">Cima</button>
+        <button data-vista="motor">Vao do motor</button>
+        <button data-vista="dianteira">Suspensao diant.</button>
+        <button data-vista="traseira">Suspensao tras.</button>
+        <button data-vista="inferior">Por baixo</button>
+        <button data-vista="tudo" class="destaque">Ver tudo</button>
+      </div>
+
+      <!--
+        Uma aba por borda, sempre no meio dela. A MESMA aba recolhe e expande —
+        so a seta inverte. Ficam dentro do palco, que nao rola, entao nunca
+        saem do lugar.
+      -->
+      <button class="aba-painel aba-esq" data-painel="lateral"
+              title="Recolher ou abrir a arvore de pecas (tecla 1)"></button>
+      <button class="aba-painel aba-dir" data-painel="detalhe"
+              title="Recolher ou abrir o painel da peca (tecla 2)"></button>
+      <button class="aba-painel aba-topo" data-painel="topo"
+              title="Recolher ou abrir a barra superior (tecla 3)"></button>
+      <button class="aba-painel aba-base" data-painel="ferramentas"
+              title="Recolher ou abrir a barra de ferramentas (tecla 4)"></button>
+    </main>
+
+    <!-- --------------------------------------------- painel direito --- -->
+    <aside id="detalhe">
+      <div id="detalhe-vazio" class="detalhe-vazio">
+        <div class="vazio-icone">&#9678;</div>
+        <h2>Selecione uma peca</h2>
+        <p>Clique em qualquer peca no modelo 3D ou navegue pela arvore de sistemas a esquerda.</p>
+        <p class="vazio-nota">
+          Cada peca traz: para que serve em linguagem simples, onde fica no carro,
+          <strong>como testar se esta com defeito</strong>, sinais de desgaste,
+          custo estimado e o argumento para negociar.
+        </p>
+        <div class="vazio-atalhos">
+          <strong>Por onde comecar</strong>
+          <button class="atalho atalho-destaque" id="iniciar-tour">
+            Tour guiado &mdash; as 15 pecas que mais importam
+          </button>
+          <button class="atalho" data-peca="correia-dentada">Correia dentada &mdash; o item numero 1</button>
+          <button class="atalho" data-peca="vareta-oleo">Vareta de oleo &mdash; teste de 30 segundos</button>
+          <button class="atalho" data-peca="distribuidor">Distribuidor &mdash; ponto fraco do EK</button>
+          <button class="atalho" data-peca="monobloco">Longarinas &mdash; checagem estrutural</button>
+        </div>
+      </div>
+      <div id="detalhe-conteudo" class="detalhe-conteudo oculto"></div>
+    </aside>
+
+    <!-- ---------------------------------------------- barra inferior --- -->
+    <footer id="ferramentas">
+      <div class="grupo-ferramenta">
+        <label for="explode">Vista explodida</label>
+        <input id="explode" type="range" min="0" max="100" value="0" />
+        <span id="explode-valor" class="valor-num">0%</span>
+      </div>
+
+      <div class="grupo-ferramenta">
+        <label class="alternador">
+          <input id="tg-fantasma" type="checkbox" />
+          <span>Isolar peca (raio-x)</span>
+        </label>
+        <label class="alternador">
+          <input id="tg-carroceria" type="checkbox" checked />
+          <span>Carroceria</span>
+        </label>
+        <label class="alternador">
+          <input id="tg-interior" type="checkbox" checked />
+          <span>Interior</span>
+        </label>
+        <label class="alternador">
+          <input id="tg-rodas" type="checkbox" checked />
+          <span>Rodas</span>
+        </label>
+      </div>
+
+      <div class="grupo-ferramenta">
+        <label class="alternador">
+          <input id="tg-ferrugem" type="checkbox" />
+          <span>Pontos de ferrugem</span>
+        </label>
+        <label class="alternador">
+          <input id="tg-motor-ligado" type="checkbox" />
+          <span>Motor ligado</span>
+        </label>
+        <label class="alternador">
+          <input id="tg-ao" type="checkbox" checked />
+          <span>Sombra de contato</span>
+        </label>
+        <label class="alternador">
+          <input id="tg-chao" type="checkbox" checked />
+          <span>Chao</span>
+        </label>
+      </div>
+
+      <div class="grupo-ferramenta fim">
+        <span id="status-render" class="valor-num"></span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ------------------------------------------------ sobreposicoes --- -->
+  <div id="tela-ficha" class="tela-cheia oculto"></div>
+  <div id="tela-sintomas" class="tela-cheia oculto"></div>
+  <div id="tela-vistoria" class="tela-cheia oculto"></div>
+  <div id="tela-ajuda" class="tela-cheia oculto"></div>
+  <div id="tela-campo" class="tela-cheia oculto"></div>
+
+  <!-- painel do tour guiado, sobreposto ao palco 3D -->
+  <div id="tour" class="tour oculto">
+    <div class="tour-topo">
+      <span id="tour-passo" class="tour-passo"></span>
+      <button id="tour-sair" class="tour-sair" title="Sair do tour">&times;</button>
+    </div>
+    <h3 id="tour-titulo"></h3>
+    <p id="tour-texto"></p>
+    <div class="tour-acoes">
+      <button id="tour-anterior" class="botao-secundario">Anterior</button>
+      <button id="tour-proximo" class="botao-primario">Proxima peca</button>
+    </div>
+  </div>
+
+  <div id="carregando" class="carregando">
+    <div class="carregando-caixa">
+      <div class="carregando-barra"><div></div></div>
+      <p>Montando o Civic peca por peca&hellip;</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

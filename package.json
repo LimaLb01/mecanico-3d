@@ -1,0 +1,18 @@
+{
+  "name": "civic-ek-mecanico-3d",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Simulador de mecanica 3D dedicado ao Honda Civic Sedan LX 1.6 16V 1998 (6a geracao EK/EJ6, motor D16Y7)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}
